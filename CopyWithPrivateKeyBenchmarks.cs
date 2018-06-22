@@ -11,6 +11,7 @@ namespace dotnet_cert_perf
     {
         private X509Certificate2 certificate;
         private RSAParameters parameters;
+        private RSA rsa;
 
         [GlobalSetup]
         public void Initialize()
@@ -27,16 +28,31 @@ namespace dotnet_cert_perf
                 P = File.ReadAllBytes("p.bin"),
                 Q = File.ReadAllBytes("q.bin"),
             };
+
+            this.rsa = RSA.Create();
+            this.rsa.ImportParameters(this.parameters);
         }
 
         [Benchmark]
         public X509Certificate2 CopyWithPrivateKey()
         {
-            using (var rsa = RSA.Create())
+            using (var newRsa = RSA.Create())
             {
-                rsa.ImportParameters(parameters);
-                return certificate.CopyWithPrivateKey(rsa);
+                newRsa.ImportParameters(this.parameters);
+                return certificate.CopyWithPrivateKey(newRsa);
             }
+        }
+
+        [Benchmark]
+        public X509Certificate2 CopyWithPrivateKeyReuseRSA()
+        {
+            return certificate.CopyWithPrivateKey(this.rsa);
+        }
+
+        [Benchmark]
+        public RSA CreateRSA()
+        {
+            return RSA.Create();
         }
     }
 }
