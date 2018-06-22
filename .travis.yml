@@ -1,0 +1,11 @@
+matrix:
+  include:
+    - os: osx
+    - os: linux
+
+language: csharp
+mono: none
+dotnet: 2.1.300
+
+script:
+- dotnet run -c Release
